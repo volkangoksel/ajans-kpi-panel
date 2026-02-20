@@ -64,7 +64,7 @@ def get_data():
 
 # --- 3. DASHBOARD GÖRÜNÜMÜ ---
 st.set_page_config(page_title="WBA KPI Dashboard", layout="wide")
-st.title("🚀 WBA KPI Performans Raporu")
+st.title("🚀 WBA KPI Performans Dasboard")
 
 df = get_data()
 
