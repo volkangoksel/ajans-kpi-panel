@@ -9,7 +9,7 @@ if "password_correct" not in st.session_state:
     st.title("🔐 Ajans KPI Paneli Girişi")
     
     # Geçerli şifreler listesi (Buraya istediğiniz kadar şifre ekleyebilirsiniz)
-    GECERLI_SIFRELER = ["ajans2024", "musteri123", "kpi-takip"] 
+    GECERLI_SIFRELER = ["Commit changes"] 
     
     password = st.text_input("Lütfen Giriş Şifresini Yazın", type="password")
     
