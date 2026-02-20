@@ -39,8 +39,8 @@ def get_data():
         df['Tamamlanan'] = pd.to_numeric(df['Tamamlanan'], errors='coerce').fillna(0).astype(int)
     return df
 
-# --- 3. DASHBOARD AYARLARI ---
-st.set_page_config(page_title="Ajans KPI Dashboard", layout="wide")
+# --- 3.  AYARLARI ---
+st.set_page_config(page_title="WBA KPI Takip Dashboard", layout="wide")
 st.title("🚀 Aylık KPI Performans Raporu")
 
 # Veriyi çek
