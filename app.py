@@ -24,29 +24,29 @@ def get_ss_client():
     client = gspread.authorize(creds)
     return client
 
-# --- DOSYA VE SEKME İSİMLERİ (BURAYI KONTROL EDİN) ---
-SHEET_NAME = "KPI_Takip_Sistemi" 
+# --- BURAYI DEĞİŞTİRİN ---
+# 1. Adımda kopyaladığınız o uzun kodu buraya yapıştırın:
+SHEET_ID = "BURAYA_KOPYALADIĞINIZ_ID_GELECEK" 
 TAB_NAME = "KPI"
 
 try:
     client = get_ss_client()
-    # Dosyayı açmaya çalış
+    # Dosyayı ID ile açıyoruz (En güvenli yol)
     try:
-        ss = client.open(SHEET_NAME)
-    except gspread.exceptions.SpreadsheetNotFound:
-        st.error(f"❌ HATA: '{SHEET_NAME}' adında bir Google Sheet dosyası bulunamadı. Lütfen Google Drive'daki dosya adını kontrol edin.")
+        ss = client.open_by_key(SHEET_ID)
+    except Exception as e:
+        st.error(f"❌ HATA: Dosyaya erişilemedi. Lütfen ID'nin doğru olduğundan ve dosyanın 'kpi-bot@...' adresiyle paylaşıldığından emin olun.")
+        st.info(f"Teknik Hata: {e}")
         st.stop()
         
-    # Sekmeyi açmaya çalış
     try:
         sheet = ss.worksheet(TAB_NAME)
-    except gspread.exceptions.WorksheetNotFound:
-        st.error(f"❌ HATA: Dosya bulundu ama içinde '{TAB_NAME}' adında bir sekme (sayfa) bulunamadı. Lütfen alttaki sayfa adını 'KPI' yapın.")
+    except:
+        st.error(f"❌ HATA: Dosya açıldı ama içinde '{TAB_NAME}' adında bir sekme bulunamadı. Lütfen sekme adını 'KPI' yapın.")
         st.stop()
 
 except Exception as e:
     st.error(f"⚠️ BAĞLANTI HATASI: {e}")
-    st.info("İpucu: Google Sheet dosyanızı şu adresle paylaştığınızdan emin olun: kpi-bot@genuine-wording-425014-r4.iam.gserviceaccount.com")
     st.stop()
 
 def get_data():
