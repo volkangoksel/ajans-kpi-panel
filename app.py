@@ -28,7 +28,7 @@ def get_ss_client():
     client = gspread.authorize(creds)
     return client
 
-SHEET_ID = "BURAYA_ID_GELECEK" # Kendi ID'nizi buraya yapıştırın
+SHEET_ID = "1g_cxk9m6-IDIc3DQlazDVIS3VivnQmK3lWBuchO8WPc" # Kendi ID'nizi buraya yapıştırın
 TAB_NAME = "KPI"
 
 def get_data():
