@@ -26,7 +26,7 @@ def get_ss_client():
 
 # --- BURAYI DEĞİŞTİRİN ---
 # 1. Adımda kopyaladığınız o uzun kodu buraya yapıştırın:
-SHEET_ID = "BURAYA_KOPYALADIĞINIZ_ID_GELECEK" 
+SHEET_ID = "1g_cxk9m6-IDIc3DQlazDVIS3VivnQmK3lWBuchO8WPc" 
 TAB_NAME = "KPI"
 
 try:
