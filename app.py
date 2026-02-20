@@ -5,35 +5,48 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # --- 1. ŞİFRE KORUMASI ---
-# Müşterinin girmesi için şifre ekranı
 if "password_correct" not in st.session_state:
     st.title("🔐 Ajans KPI Paneli Girişi")
     password = st.text_input("Lütfen Giriş Şifresini Yazın", type="password")
     if st.button("Giriş Yap"):
-        if password == "ajans2024": # BURAYI İSTEDİĞİN ŞİFREYLE DEĞİŞTİR
+        if password == "ajans2024": 
             st.session_state.password_correct = True
             st.rerun()
         else:
             st.error("Hatalı şifre!")
     st.stop()
 
-# --- 2. GOOGLE SHEETS BAĞLANTISI (BULUT SÜRÜMÜ) ---
+# --- 2. GOOGLE SHEETS BAĞLANTISI ---
 def get_ss_client():
-    # Bu kısım bilgisayardaki creds.json yerine 
-    # Streamlit Cloud üzerindeki "Secrets" ayarlarını okur
     creds_dict = st.secrets["gcp_service_account"]
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     return client
 
-SHEET_NAME = "KPI_Takip_Sistemi" # Google Sheet dosyanızın adı
+# --- DOSYA VE SEKME İSİMLERİ (BURAYI KONTROL EDİN) ---
+SHEET_NAME = "KPI_Takip_Sistemi" 
+TAB_NAME = "KPI"
 
 try:
     client = get_ss_client()
-    sheet = client.open(SHEET_NAME).worksheet("KPI")
+    # Dosyayı açmaya çalış
+    try:
+        ss = client.open(SHEET_NAME)
+    except gspread.exceptions.SpreadsheetNotFound:
+        st.error(f"❌ HATA: '{SHEET_NAME}' adında bir Google Sheet dosyası bulunamadı. Lütfen Google Drive'daki dosya adını kontrol edin.")
+        st.stop()
+        
+    # Sekmeyi açmaya çalış
+    try:
+        sheet = ss.worksheet(TAB_NAME)
+    except gspread.exceptions.WorksheetNotFound:
+        st.error(f"❌ HATA: Dosya bulundu ama içinde '{TAB_NAME}' adında bir sekme (sayfa) bulunamadı. Lütfen alttaki sayfa adını 'KPI' yapın.")
+        st.stop()
+
 except Exception as e:
-    st.error(f"Hata: Sayfaya erişilemedi. Lütfen Secrets ayarlarını kontrol edin.")
+    st.error(f"⚠️ BAĞLANTI HATASI: {e}")
+    st.info("İpucu: Google Sheet dosyanızı şu adresle paylaştığınızdan emin olun: kpi-bot@genuine-wording-425014-r4.iam.gserviceaccount.com")
     st.stop()
 
 def get_data():
@@ -50,7 +63,6 @@ st.title("🚀 Aylık KPI Performans Raporu")
 
 df = get_data()
 
-# KPI Kartları
 cols = st.columns(len(df))
 for i, row in df.iterrows():
     hedef = int(row['Hedef'])
