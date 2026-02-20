@@ -6,15 +6,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # --- 1. ŞİFRE KORUMASI ---
 if "password_correct" not in st.session_state:
-    st.title("🔐 WBA KPI Paneli Girişi")
-    
-    # Geçerli şifreler listesi (Buraya istediğiniz kadar şifre ekleyebilirsiniz)
-    GECERLI_SIFRELER = ["wbaajans2026", "Kpi_musteri123", "kpi-takip_Oliz26"]
-    
+    st.title("🔐 Ajans KPI Paneli Girişi")
+    GECERLI_SIFRELER = ["ajans2024", "musteri123"] # Şifrelerinizi buradan güncelleyebilirsiniz
     password = st.text_input("Lütfen Giriş Şifresini Yazın", type="password")
-    
     if st.button("Giriş Yap"):
-        if password in GECERLI_SIFRELER: # Şifre listede var mı kontrolü
+        if password in GECERLI_SIFRELER:
             st.session_state.password_correct = True
             st.rerun()
         else:
@@ -29,32 +25,13 @@ def get_ss_client():
     client = gspread.authorize(creds)
     return client
 
-# --- BURAYI DEĞİŞTİRİN ---
-# 1. Adımda kopyaladığınız o uzun kodu buraya yapıştırın:
-SHEET_ID = "1g_cxk9m6-IDIc3DQlazDVIS3VivnQmK3lWBuchO8WPc" 
+SHEET_ID = "BURAYA_ID_GELECEK" # Kendi ID'nizi buraya tekrar yapıştırın
 TAB_NAME = "KPI"
 
-try:
-    client = get_ss_client()
-    # Dosyayı ID ile açıyoruz (En güvenli yol)
-    try:
-        ss = client.open_by_key(SHEET_ID)
-    except Exception as e:
-        st.error(f"❌ HATA: Dosyaya erişilemedi. Lütfen ID'nin doğru olduğundan ve dosyanın 'kpi-bot@...' adresiyle paylaşıldığından emin olun.")
-        st.info(f"Teknik Hata: {e}")
-        st.stop()
-        
-    try:
-        sheet = ss.worksheet(TAB_NAME)
-    except:
-        st.error(f"❌ HATA: Dosya açıldı ama içinde '{TAB_NAME}' adında bir sekme bulunamadı. Lütfen sekme adını 'KPI' yapın.")
-        st.stop()
-
-except Exception as e:
-    st.error(f"⚠️ BAĞLANTI HATASI: {e}")
-    st.stop()
-
 def get_data():
+    client = get_ss_client()
+    ss = client.open_by_key(SHEET_ID)
+    sheet = ss.worksheet(TAB_NAME)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
     if not df.empty:
@@ -62,34 +39,60 @@ def get_data():
         df['Tamamlanan'] = pd.to_numeric(df['Tamamlanan'], errors='coerce').fillna(0).astype(int)
     return df
 
-# --- 3. DASHBOARD GÖRÜNÜMÜ ---
-st.set_page_config(page_title="WBA KPI Dashboard", layout="wide")
-st.title("🚀 WBA KPI Takip Dashboard")
+# --- 3. DASHBOARD AYARLARI ---
+st.set_page_config(page_title="Ajans KPI Dashboard", layout="wide")
+st.title("🚀 Aylık KPI Performans Raporu")
 
+# Veriyi çek
 df = get_data()
 
-cols = st.columns(len(df))
-for i, row in df.iterrows():
-    hedef = int(row['Hedef'])
-    yapilan = int(row['Tamamlanan'])
-    yuzde = (yapilan / hedef * 100) if hedef > 0 else 0
-    bar_color = "red" if yuzde < 50 else "orange" if yuzde < 90 else "green"
+# --- 4. FİLTRELEME VE DÜZEN (İstediğinizi Seçme Özelliği) ---
+st.sidebar.header("📊 Görünüm Ayarları")
+tum_isler = df['Is_Kalemi'].tolist()
+secilen_isler = st.sidebar.multiselect(
+    "Görüntülenecek İş Kalemlerini Seçin", 
+    options=tum_isler, 
+    default=tum_isler
+)
+
+# Her satırda kaç grafik olsun? (3 veya 4 idealdir)
+grafik_sayisi_basi_satir = st.sidebar.slider("Satır Başına Grafik Sayısı", 1, 5, 3)
+
+# Seçilenlere göre filtrele
+df_filtered = df[df['Is_Kalemi'].isin(secilen_isler)]
+
+# --- 5. IZGARA (GRID) YAPISI ---
+if not df_filtered.empty:
+    # Grafiklerin alt alta kaç satır olacağını hesapla
+    rows = [df_filtered.iloc[i:i + grafik_sayisi_basi_satir] for i in range(0, df_filtered.shape[0], grafik_sayisi_basi_satir)]
     
-    with cols[i]:
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = yapilan,
-            title = {'text': f"<b>{row['Is_Kalemi']}</b>", 'font': {'size': 16}},
-            gauge = {
-                'axis': {'range': [None, max(hedef, yapilan, 1)]},
-                'bar': {'color': bar_color},
-                'steps': [{'range': [0, hedef], 'color': "#eeeeee"}]
-            }
-        ))
-        fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
-        st.plotly_chart(fig, use_container_width=True)
-        st.write(f"<p style='text-align: center;'>Hedef: {hedef}</p>", unsafe_allow_html=True)
+    for row_df in rows:
+        cols = st.columns(grafik_sayisi_basi_satir)
+        for i, (index, row) in enumerate(row_df.iterrows()):
+            hedef = int(row['Hedef'])
+            yapilan = int(row['Tamamlanan'])
+            yuzde = (yapilan / hedef * 100) if hedef > 0 else 0
+            
+            # Renkler
+            bar_color = "red" if yuzde < 50 else "orange" if yuzde < 90 else "green"
+            
+            with cols[i]:
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number",
+                    value = yapilan,
+                    title = {'text': f"<b>{row['Is_Kalemi']}</b>", 'font': {'size': 18}},
+                    gauge = {
+                        'axis': {'range': [None, max(hedef, yapilan, 1)]},
+                        'bar': {'color': bar_color},
+                        'steps': [{'range': [0, hedef], 'color': "#333" if st.get_option("theme.base") == "dark" else "#eee"}]
+                    }
+                ))
+                fig.update_layout(height=280, margin=dict(l=30, r=30, t=50, b=20))
+                st.plotly_chart(fig, use_container_width=True)
+                st.write(f"<p style='text-align: center; font-size: 16px;'>Hedef: <b>{hedef}</b> | Kalan: <b>{max(0, hedef-yapilan)}</b></p>", unsafe_allow_html=True)
+else:
+    st.info("Lütfen görüntülemek için soldan bir iş kalemi seçin.")
 
 st.divider()
 st.subheader("📋 Detaylı Liste")
-st.dataframe(df, use_container_width=True, hide_index=True)
+st.dataframe(df_filtered, use_container_width=True, hide_index=True)
