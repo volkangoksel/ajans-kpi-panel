@@ -7,7 +7,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- 1. ŞİFRE KORUMASI ---
 if "password_correct" not in st.session_state:
     st.title("🔐 Ajans KPI Paneli Girişi")
-    GECERLI_SIFRELER = ["ajans2024", "musteri123"] # Şifrelerinizi buradan güncelleyebilirsiniz
+    GECERLI_SIFRELER = ["wbaajans2026", "Kpi_musteri123", "kpi-takip_Oliz26"] # Şifrelerinizi buradan güncelleyebilirsiniz
     password = st.text_input("Lütfen Giriş Şifresini Yazın", type="password")
     if st.button("Giriş Yap"):
         if password in GECERLI_SIFRELER:
