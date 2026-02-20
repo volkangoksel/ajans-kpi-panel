@@ -41,7 +41,7 @@ def get_data():
 
 # --- 3.  AYARLARI ---
 st.set_page_config(page_title="WBA KPI Takip Dashboard", layout="wide")
-st.title("🚀 Aylık KPI Performans Raporu")
+st.title("🚀 Aylık KPI Takip Dashboard")
 
 # Veriyi çek
 df = get_data()
