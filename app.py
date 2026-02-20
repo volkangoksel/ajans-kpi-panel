@@ -6,7 +6,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # --- 1. ŞİFRE KORUMASI ---
 if "password_correct" not in st.session_state:
-    st.title("🔐 Ajans KPI Paneli Girişi")
+    st.title("🔐 WBA KPI Paneli Girişi")
     
     # Geçerli şifreler listesi (Buraya istediğiniz kadar şifre ekleyebilirsiniz)
     GECERLI_SIFRELER = ["wbaajans2026", "Kpi_musteri123", "kpi-takip_Oliz26"]
@@ -63,8 +63,8 @@ def get_data():
     return df
 
 # --- 3. DASHBOARD GÖRÜNÜMÜ ---
-st.set_page_config(page_title="Ajans KPI Dashboard", layout="wide")
-st.title("🚀 Aylık KPI Performans Raporu")
+st.set_page_config(page_title="WBA KPI Dashboard", layout="wide")
+st.title("🚀 WBA KPI Performans Raporu")
 
 df = get_data()
 
